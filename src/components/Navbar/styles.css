@@ -1,0 +1,9 @@
+#links-container {
+  height: 70px;
+}
+
+#banner-link {
+  font-size: 1.8em;
+  text-decoration: none;
+  font-weight: bold;
+}

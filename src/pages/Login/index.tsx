@@ -14,20 +14,19 @@ export const action = async({ request }: ActionFunctionArgs) => {
     const loginForm = Object.fromEntries(formData) as LoginForm;
     const response = await requestBackendLogin(loginForm);
     saveAuthData(response.data);
-    toast.success('Logado com sucesso', {
-      position: 'bottom-right',
-      theme: 'dark',
-      autoClose: 3000
-    });
+    toast.success('Logado com sucesso');
     return redirect('/movies');
   }
   catch(e) {
     let error = e as any;
-    if(error?.response?.request?.status === 400) {
+    const status = error?.response?.request?.status as number | undefined;
+
+    if(status && status === 400) {
       return {
         error: 'Usuário ou senha inválidos'
       }
     }
+
     throw e;
   }
 
@@ -45,7 +44,7 @@ const Login = () => {
   const actionData = useActionData() as ActionData | undefined;
   const error = actionData ? actionData.error : undefined;
 
-  const onSubmit = async() => {
+  const onSubmit = () => {
     console.log('onSubmit');
     const form = document.getElementById('login-form') as HTMLFormElement;;
     submit(form);

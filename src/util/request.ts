@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import qs from 'qs';
-import { LoginForm } from '../types/LoginForm';
+import { LoginForm } from '../types/domain/LoginForm';
+import { getAuthData } from './storage';
 
 const BASE_URL = 'http://localhost:8080';
 
@@ -32,4 +33,17 @@ export const requestBackendLogin = (loginForm: LoginForm) => {
     data
   });
 
+}
+
+export const requestBackend = (config: AxiosRequestConfig) => {
+
+  const headers = config.withCredentials ? {
+    Authorization: 'Bearer ' + getAuthData().access_token
+  } : config.headers;
+
+  console.log('headers', headers);
+
+  const newConfig: AxiosRequestConfig = { ...config, headers, baseURL: BASE_URL };
+
+  return axios(newConfig);
 }

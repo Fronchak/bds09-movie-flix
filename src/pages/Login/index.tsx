@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Form, useSubmit, ActionFunctionArgs, useActionData, redirect } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import HomeImage from '../../assets/imgs/home-banner.svg';
-import { LoginForm } from '../../types/LoginForm';
+import { LoginForm } from '../../types/domain/LoginForm';
 import { requestBackendLogin } from '../../util/request';
 import { saveAuthData } from '../../util/storage';
 import './styles.css';

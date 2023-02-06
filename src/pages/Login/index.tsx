@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Form, useSubmit, ActionFunctionArgs, useActionData } from 'react-router-dom';
+import { Form, useSubmit, ActionFunctionArgs, useActionData, redirect } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import HomeImage from '../../assets/imgs/home-banner.svg';
 import { LoginForm } from '../../types/LoginForm';
 import { requestBackendLogin } from '../../util/request';
+import { saveAuthData } from '../../util/storage';
 import './styles.css';
 
 export const action = async({ request }: ActionFunctionArgs) => {
@@ -11,9 +13,13 @@ export const action = async({ request }: ActionFunctionArgs) => {
     const formData = await request.formData();
     const loginForm = Object.fromEntries(formData) as LoginForm;
     const response = await requestBackendLogin(loginForm);
-    console.log(response);
-
-    return null;
+    saveAuthData(response.data);
+    toast.success('Logado com sucesso', {
+      position: 'bottom-right',
+      theme: 'dark',
+      autoClose: 3000
+    });
+    return redirect('/movies');
   }
   catch(e) {
     let error = e as any;

@@ -4,7 +4,10 @@ import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route } 
 import DefaultErrorComponent from './components/DefaultErrorComponent';
 import DefaultErrorPage from './pages/DefaultErrorPage';
 import Login, { action as LoginAction } from './pages/Login';
+import Movies from './pages/Movies';
 import Root from './pages/Root';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const router = createBrowserRouter (
   createRoutesFromElements (
@@ -19,6 +22,10 @@ const router = createBrowserRouter (
           element={ <Login /> }
           action={ LoginAction }
         />
+        <Route
+          path='movies'
+          element={ <Movies /> }
+        />
       </Route>
     </Route>
   )
@@ -27,5 +34,6 @@ const router = createBrowserRouter (
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <RouterProvider router={router} />
+    <ToastContainer />
   </React.StrictMode>,
 )

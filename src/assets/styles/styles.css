@@ -55,7 +55,9 @@ body {
   padding-bottom: 0.8em;
 }
 
-.base-btn:hover {
+.base-btn:hover,
+.base-btn:focus,
+.base-btn:active {
   background-color: var(--primary-color);
   color: #000;
 }

@@ -23,7 +23,7 @@ export const action = async({ request }: ActionFunctionArgs) => {
   }
   catch(e) {
     let error = e as any;
-    if(error.response.request.status === 400) {
+    if(error?.response?.request?.status === 400) {
       return {
         error: 'Usuário ou senha inválidos'
       }

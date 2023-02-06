@@ -1,0 +1,17 @@
+#login-page-container {
+  height: calc(100vh - 70px);
+}
+
+#login-page-container .base-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 480px;
+  max-height: 580px;
+  margin: 0 auto;
+}
+
+#login-page-container .base-card h2 {
+  font-size: 3em;
+}

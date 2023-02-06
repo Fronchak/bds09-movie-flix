@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, createRoutesFromElements, Route } from 'react-router-dom';
 import DefaultErrorComponent from './components/DefaultErrorComponent';
 import DefaultErrorPage from './pages/DefaultErrorPage';
+import Login from './pages/Login';
 import Root from './pages/Root';
 
 const router = createBrowserRouter (
@@ -13,7 +14,10 @@ const router = createBrowserRouter (
       errorElement={ <DefaultErrorPage /> }
     >
       <Route errorElement={ <DefaultErrorComponent /> }>
-
+        <Route
+          index={ true }
+          element={ <Login /> }
+        />
       </Route>
     </Route>
   )

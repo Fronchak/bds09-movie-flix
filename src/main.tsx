@@ -28,23 +28,21 @@ const router = createBrowserRouter (
         />
         <Route
           element={ <AuthenticatedPrivateRoute /> }
-          path='movies'
         >
           <Route
+            path='movies'
             element={ <Movies /> }
             loader={ moviesLoader }
           />
-        </Route>
-        <Route
-          element={ <AuthenticatedPrivateRoute /> }
-          path='movies/:id'
-        >
           <Route
+            path="movies/:id"
             element={ <MoviePage /> }
             loader={ moviePageLoader }
             action={ saveReviewAction }
           />
         </Route>
+
+
         <Route
           path="/logout"
           loader={ logoutLoader }

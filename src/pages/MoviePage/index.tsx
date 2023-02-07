@@ -17,18 +17,28 @@ import ReviewComponent from '../../components/ReviewComponent';
 import { Movie } from '../../types/domain/Movie';
 import { Review } from '../../types/domain/Review';
 import { ValidationError } from '../../types/vendor/ValidationError';
+import { hasAnyRole, isAuthenticated } from '../../util/auth';
 import { requestBackend } from '../../util/request';
 import './styles.css';
 
 export const action = async({ params, request }: ActionFunctionArgs) => {
-  const formData = await request.formData();
+  console.log('no início do action');
 
+  if(!isAuthenticated()) {
+    toast.info('É necessário estar logado para postar reviews');
+    return redirect('/');
+  }
+
+  if(!hasAnyRole(['ROLE_MEMBER'])) {
+    toast.info('Somente usuários membros podem postar reviews');
+    return null;
+  }
+
+  const formData = await request.formData();
   const movieId = params.id;
-  console.log(movieId);
   const obj = Object.fromEntries(formData);
-  console.log(obj);
   const data = { ...obj, movieId };
-  console.log(data);
+
   const config: AxiosRequestConfig = {
     method: 'post',
     url: '/reviews',
@@ -41,9 +51,10 @@ export const action = async({ params, request }: ActionFunctionArgs) => {
     return null;
   }
   catch(e) {
+    console.log('No error do action');
     const error = e as any;
     const status = error?.request?.status as number | undefined;
-    console.log(error);
+
     if(status && status == 401) {
       toast.info('É necessário estar logado para postar reviews');
       return redirect('/');
@@ -123,6 +134,7 @@ const MoviePage = () => {
   return (
     <div className="container py-3" id="movie-page-container">
       <MovieDetailsCard movie={movie} />
+      { hasAnyRole(['ROLE_MEMBER']) && (
       <div className="p-3 mt-3 base-card">
         <Form method='post' onSubmit={handleSubmit(onSubmit)} id="review-form">
           <div className="mb-3">
@@ -156,17 +168,25 @@ const MoviePage = () => {
                   <span className="visually-hidden">Loading...</span>
                 </div>
               ) }
-              </button>
+            </button>
           </div>
         </Form>
       </div>
-      <div className="px-3 mt-3 pb-3 pt-1 base-card">
-        { reviews.map((review) => (
-          <div className="mb-1" key={review.id}>
-            <ReviewComponent review={review} />
-          </div>
-        )) }
-      </div>
+      ) }
+
+      { reviews.length > 0 ? (
+        <div className="px-3 mt-3 pb-3 pt-1 base-card">
+          { reviews.map((review) => (
+            <div className="mb-1" key={review.id}>
+              <ReviewComponent review={review} />
+            </div>
+          )) }
+        </div>
+      ) : (
+        <div className="p-3 mt-3 base-card">
+          <p className="mb-0 fs-4">Esse filme ainda não possui nenhuma review</p>
+        </div>
+      ) }
     </div>
   );
 }

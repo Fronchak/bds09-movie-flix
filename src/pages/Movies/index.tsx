@@ -7,6 +7,7 @@ import { requestBackend } from '../../util/request';
 import './styles.css';
 
 export const loader = async() => {
+  console.log('No loader do Movies');
   const config: AxiosRequestConfig = {
     method: 'get',
     url: '/movies',

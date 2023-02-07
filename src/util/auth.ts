@@ -21,7 +21,10 @@ export const getTokenData = (): TokenData | undefined => {
 
 export const isAuthenticated = (): boolean => {
   const tokenData = getTokenData();
-  return tokenData !== undefined && (tokenData.exp >= (Date.now() / 1000));
+  console.log('tokenData', tokenData);
+  const aux = tokenData !== undefined && (tokenData.exp >= (Date.now() / 1000));
+  console.log('aux', aux);
+  return aux;
 }
 
 export const hasAnyRole = (roles: Role[]) => {

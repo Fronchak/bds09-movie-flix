@@ -10,6 +10,7 @@ import Logout, {loader as logoutLoader} from './pages/Logout';
 import MoviePage, { loader as moviePageLoader, action as saveReviewAction } from './pages/MoviePage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AuthenticatedPrivateRoute from './pages/AuthenticatedPrivateRoute';
 
 const router = createBrowserRouter (
   createRoutesFromElements (
@@ -26,16 +27,24 @@ const router = createBrowserRouter (
           action={ LoginAction }
         />
         <Route
+          element={ <AuthenticatedPrivateRoute /> }
           path='movies'
-          element={ <Movies /> }
-          loader={ moviesLoader }
-        />
+        >
+          <Route
+            element={ <Movies /> }
+            loader={ moviesLoader }
+          />
+        </Route>
         <Route
+          element={ <AuthenticatedPrivateRoute /> }
           path='movies/:id'
-          element={ <MoviePage /> }
-          loader={ moviePageLoader }
-          action={ saveReviewAction }
-        />
+        >
+          <Route
+            element={ <MoviePage /> }
+            loader={ moviePageLoader }
+            action={ saveReviewAction }
+          />
+        </Route>
         <Route
           path="/logout"
           loader={ logoutLoader }

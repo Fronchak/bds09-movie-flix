@@ -6,5 +6,5 @@ export type Review = {
 
 type SimpleUser = {
   id: number;
-  user: string;
+  name: string;
 }

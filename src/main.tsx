@@ -5,7 +5,8 @@ import DefaultErrorComponent from './components/DefaultErrorComponent';
 import DefaultErrorPage from './pages/DefaultErrorPage';
 import Login, { action as LoginAction } from './pages/Login';
 import Movies, { loader as moviesLoader } from './pages/Movies';
-import Root from './pages/Root';
+import Root, { loader as RootLoader } from './pages/Root';
+import Logout, {loader as logoutLoader} from './pages/Logout';
 import MoviePage, { loader as moviePageLoader, action as saveReviewAction } from './pages/MoviePage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,6 +16,7 @@ const router = createBrowserRouter (
     <Route
       path="/"
       element={ <Root /> }
+      loader={ RootLoader }
       errorElement={ <DefaultErrorPage /> }
     >
       <Route errorElement={ <DefaultErrorComponent /> }>
@@ -33,6 +35,11 @@ const router = createBrowserRouter (
           element={ <MoviePage /> }
           loader={ moviePageLoader }
           action={ saveReviewAction }
+        />
+        <Route
+          path="/logout"
+          loader={ logoutLoader }
+          element={ <Logout /> }
         />
       </Route>
     </Route>

@@ -1,10 +1,22 @@
 import { AxiosRequestConfig } from 'axios';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { LoaderFunctionArgs, ActionFunctionArgs, useLoaderData, Form, useSubmit, redirect } from 'react-router-dom';
+import {
+  LoaderFunctionArgs,
+  ActionFunctionArgs,
+  useLoaderData,
+  Form,
+  useSubmit,
+  redirect,
+  useNavigation,
+  useActionData
+} from 'react-router-dom';
 import { toast } from 'react-toastify';
 import MovieDetailsCard from '../../components/MovieDetailsCard';
+import ReviewComponent from '../../components/ReviewComponent';
 import { Movie } from '../../types/domain/Movie';
+import { Review } from '../../types/domain/Review';
+import { ValidationError } from '../../types/vendor/ValidationError';
 import { requestBackend } from '../../util/request';
 import './styles.css';
 
@@ -24,14 +36,14 @@ export const action = async({ params, request }: ActionFunctionArgs) => {
     withCredentials: true
   }
   try {
-    const response = await requestBackend(config);
+    await requestBackend(config);
     toast.success('Review salva com sucesso!');
     return null;
   }
   catch(e) {
     const error = e as any;
     const status = error?.request?.status as number | undefined;
-
+    console.log(error);
     if(status && status == 401) {
       toast.info('É necessário estar logado para postar reviews');
       return redirect('/');
@@ -42,6 +54,14 @@ export const action = async({ params, request }: ActionFunctionArgs) => {
       return null;
     }
 
+    if(status && status === 422) {
+      toast.error('Erro ao salvar review');
+      return {
+        validationError: error?.response?.data
+      };
+
+    }
+
     throw e;
   }
 
@@ -49,35 +69,55 @@ export const action = async({ params, request }: ActionFunctionArgs) => {
 
 export const loader = async({ params }: LoaderFunctionArgs) => {
   const id = params.id;
-  const config: AxiosRequestConfig = {
+  const movieConfig: AxiosRequestConfig = {
     method: 'get',
     url: `/movies/${ id }`,
     withCredentials: true
   };
-  const response = await requestBackend(config);
-  const movie = response.data;
-  return { movie }
+  const movieResponse = await requestBackend(movieConfig);
+  const movie = movieResponse.data;
+
+  const reviewsConfig: AxiosRequestConfig = {
+    method: 'get',
+    url: `/movies/${ id }/reviews`,
+    withCredentials: true
+  }
+  const reviewsResponse = await requestBackend(reviewsConfig);
+  const reviews = reviewsResponse.data;
+  return { movie, reviews }
 }
 
 type Loader = {
   movie: Movie;
+  reviews: Review[]
 }
 
 type ReviewForm = {
   text: string;
 }
 
+type ActionData = {
+  validationError: ValidationError;
+}
+
 const MoviePage = () => {
 
   const [ wasSubmit, setWasSubmit ] = useState<boolean>();
-  const { movie } = useLoaderData() as Loader;
-  const { register, handleSubmit, formState: { errors } } = useForm<ReviewForm>();
+  const { movie, reviews } = useLoaderData() as Loader;
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<ReviewForm>();
   const submit = useSubmit();
+  const navigation = useNavigation();
+  const actionData = useActionData() as ActionData | undefined;
+  const fieldError =
+      actionData ? actionData.validationError.errors.filter((fieldError) => fieldError.fieldName === 'text') : [];
+  const serverError = fieldError.length > 0 ? fieldError[0].message : '';
 
   const onSubmit = () => {
     console.log('onSubmit');
-    const form = document.getElementById('review-form') as HTMLFormElement;;
+    const form = document.getElementById('review-form') as HTMLFormElement;
     submit(form);
+    setWasSubmit(false);
+    setValue('text', '');
   }
 
   return (
@@ -98,10 +138,11 @@ const MoviePage = () => {
             name="text"
             id="text"
             placeholder='Deixe sua avaliação aqui'
-            className={`form-control`}
+            defaultValue={''}
+            className={`form-control ${ wasSubmit ? errors.text ? 'is-invalid' : 'is-valid' : '' }`}
             />
             <div className="invalid-feedback d-block">
-              { errors.text?.message }
+              { serverError || errors.text?.message }
             </div>
           </div>
           <div id="review-form-button-container">
@@ -109,9 +150,22 @@ const MoviePage = () => {
               className="btn base-btn"
               type='submit'
               onClick={() => setWasSubmit(true)}
-              >Salvar avaliação</button>
+              >Salvar avaliação
+              { navigation.state === 'loading' && (
+                <div className="spinner-border spinner-border-sm mx-2" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              ) }
+              </button>
           </div>
         </Form>
+      </div>
+      <div className="px-3 mt-3 pb-3 pt-1 base-card">
+        { reviews.map((review) => (
+          <div className="mb-1" key={review.id}>
+            <ReviewComponent review={review} />
+          </div>
+        )) }
       </div>
     </div>
   );

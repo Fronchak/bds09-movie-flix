@@ -1,21 +1,38 @@
 import { AxiosRequestConfig } from 'axios'
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { redirect, useLoaderData, useNavigate, useNavigation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import MovieCard from '../../components/MovieCard';
 import { MovieList } from '../../types/domain/MovieList';
 import { SpringPage } from '../../types/vendor/SpringPage';
-import { requestBackend } from '../../util/request';
+import { hasAnyRole, isAuthenticated } from '../../util/auth';
+import { getResponseStatusFromErrorRequest, isForbidden, isUnauthorized, requestBackend } from '../../util/request';
 import './styles.css';
 
 export const loader = async() => {
-  console.log('No loader do Movies');
-  const config: AxiosRequestConfig = {
-    method: 'get',
-    url: '/movies',
-    withCredentials: true
+  try {
+    if(!isAuthenticated()) {
+      toast.info('É necessário estar logado para acessar essa página');
+      return redirect('/');
+    }
+
+    const config: AxiosRequestConfig = {
+      method: 'get',
+      url: '/movies',
+      withCredentials: true
+    }
+    const response = await requestBackend(config);
+    const moviesData = response.data;
+    return { moviesData };
   }
-  const response = await requestBackend(config);
-  const moviesData = response.data;
-  return { moviesData };
+  catch(e) {
+    const status = getResponseStatusFromErrorRequest(e);
+    if(isUnauthorized(status)) {
+      toast.info('É necessário estar logado para acessar essa página');
+      return redirect('/');
+    }
+
+    throw e;
+  }
 }
 
 type LoaderData = {

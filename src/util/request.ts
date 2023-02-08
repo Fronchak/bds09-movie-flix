@@ -45,3 +45,19 @@ export const requestBackend = (config: AxiosRequestConfig) => {
 
   return axios(newConfig);
 }
+
+export const getResponseStatusFromErrorRequest = (e: unknown) => {
+  return (e as any)?.request?.status as number | undefined;
+}
+
+export const isUnauthorized = (status : number | undefined): boolean => {
+  return status !== undefined && status === 401;
+}
+
+export const isForbidden = (status : number | undefined) => {
+  return status !== undefined && status === 403;
+}
+
+export const isUnprocessableEntity = (status: number | undefined) => {
+  return status !== undefined && status === 422;
+}

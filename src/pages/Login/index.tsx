@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Form, useSubmit, ActionFunctionArgs, useActionData, redirect } from 'react-router-dom';
+import { Form, useSubmit, ActionFunctionArgs, useActionData, redirect, useNavigation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import HomeImage from '../../assets/imgs/home-banner.svg';
 import { LoginForm } from '../../types/domain/LoginForm';
@@ -43,6 +43,7 @@ const Login = () => {
   const submit = useSubmit();
   const actionData = useActionData() as ActionData | undefined;
   const error = actionData ? actionData.error : undefined;
+  const navigation = useNavigation();
 
   const onSubmit = () => {
     console.log('onSubmit');
@@ -108,7 +109,13 @@ const Login = () => {
                   { errors.password?.message }
                 </div>
               </div>
-              <button className="btn base-btn" type="submit" onClick={() => setWasSubmit(true)}>Fazer login</button>
+              <button className="btn base-btn" type="submit" onClick={() => setWasSubmit(true)}>Fazer login
+              { navigation.state === 'loading' && (
+                <div className="ms-2 spinner-border spinner-border-sm" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              ) }
+              </button>
             </Form>
           </div>
         </div>

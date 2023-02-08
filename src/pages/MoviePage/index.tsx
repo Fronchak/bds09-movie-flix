@@ -18,11 +18,10 @@ import { Movie } from '../../types/domain/Movie';
 import { Review } from '../../types/domain/Review';
 import { ValidationError } from '../../types/vendor/ValidationError';
 import { hasAnyRole, isAuthenticated } from '../../util/auth';
-import { requestBackend } from '../../util/request';
+import { getResponseStatusFromErrorRequest, isUnauthorized, requestBackend } from '../../util/request';
 import './styles.css';
 
 export const action = async({ params, request }: ActionFunctionArgs) => {
-  console.log('no início do action');
 
   if(!isAuthenticated()) {
     toast.info('É necessário estar logado para postar reviews');
@@ -51,9 +50,7 @@ export const action = async({ params, request }: ActionFunctionArgs) => {
     return null;
   }
   catch(e) {
-    console.log('No error do action');
-    const error = e as any;
-    const status = error?.request?.status as number | undefined;
+    const status = getResponseStatusFromErrorRequest(e);
 
     if(status && status == 401) {
       toast.info('É necessário estar logado para postar reviews');
@@ -68,7 +65,7 @@ export const action = async({ params, request }: ActionFunctionArgs) => {
     if(status && status === 422) {
       toast.error('Erro ao salvar review');
       return {
-        validationError: error?.response?.data
+        validationError: (e as any)?.response?.data
       };
 
     }
@@ -79,23 +76,42 @@ export const action = async({ params, request }: ActionFunctionArgs) => {
 }
 
 export const loader = async({ params }: LoaderFunctionArgs) => {
-  const id = params.id;
-  const movieConfig: AxiosRequestConfig = {
-    method: 'get',
-    url: `/movies/${ id }`,
-    withCredentials: true
-  };
-  const movieResponse = await requestBackend(movieConfig);
-  const movie = movieResponse.data;
+  try {
+    if(!isAuthenticated()) {
+      toast.info('É necessário estar logado para acessar essa página');
+      return redirect('/');
+    }
 
-  const reviewsConfig: AxiosRequestConfig = {
-    method: 'get',
-    url: `/movies/${ id }/reviews`,
-    withCredentials: true
+    const id = params.id;
+    const movieConfig: AxiosRequestConfig = {
+      method: 'get',
+      url: `/movies/${ id }`,
+      withCredentials: true
+    };
+
+    const movieResponse = await requestBackend(movieConfig);
+    const movie = movieResponse.data;
+
+    const reviewsConfig: AxiosRequestConfig = {
+      method: 'get',
+      url: `/movies/${ id }/reviews`,
+      withCredentials: true
+    }
+    const reviewsResponse = await requestBackend(reviewsConfig);
+    const reviews = reviewsResponse.data;
+    return { movie, reviews }
   }
-  const reviewsResponse = await requestBackend(reviewsConfig);
-  const reviews = reviewsResponse.data;
-  return { movie, reviews }
+  catch(e) {
+    const status = getResponseStatusFromErrorRequest(e);
+
+    if(isUnauthorized(status)) {
+      toast.info('É necessário estar logado para acessar essa página');
+      return redirect('/');
+    }
+
+    throw e;
+  }
+
 }
 
 type Loader = {
@@ -124,7 +140,6 @@ const MoviePage = () => {
   const serverError = fieldError.length > 0 ? fieldError[0].message : '';
 
   const onSubmit = () => {
-    console.log('onSubmit');
     const form = document.getElementById('review-form') as HTMLFormElement;
     submit(form);
     setWasSubmit(false);
@@ -133,7 +148,8 @@ const MoviePage = () => {
 
   return (
     <div className="container py-3" id="movie-page-container">
-      <MovieDetailsCard movie={movie} />
+      { <MovieDetailsCard movie={movie} /> }
+
       { hasAnyRole(['ROLE_MEMBER']) && (
       <div className="p-3 mt-3 base-card">
         <Form method='post' onSubmit={handleSubmit(onSubmit)} id="review-form">
